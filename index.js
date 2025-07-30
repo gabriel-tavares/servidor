@@ -28,7 +28,7 @@ function carregarPrompt(metodo) {
 app.post("/analisar", async (req, res) => {
   try {
     const { image, metodo } = req.body;
-    const prompt = prompts[metodo] || prompts.nielsen;
+    const prompt = carregarPrompt(metodo);
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
