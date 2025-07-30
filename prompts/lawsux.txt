@@ -1,8 +1,8 @@
-Analise a interface com base nas Leis da Experiência do Usuário (ex: Lei de Hick, Fitts, Miller, Tesler, etc). Para cada lei aplicável, siga a estrutura:
+Analise a interface com base nas Leis da Experiência do Usuário (Laws of UX), como a Lei de Hick, de Fitts, de Jakob, entre outras. Para cada lei aplicada, use a estrutura numerada:
 
-1 - Título (Nome da lei)
-2 - Problema
-3 - Descrição do problema
-4 - Sugestão de melhoria
-5 - Descrição da melhoria
-6 - Severidade
+1 - [Lei de UX analisada]  
+2 - [Problema identificado]  
+3 - [Descrição do problema]  
+4 - [Sugestão de melhoria]  
+5 - [Descrição da melhoria]  
+6 - [Severidade: leve, moderada ou crítica]

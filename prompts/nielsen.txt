@@ -1,8 +1,10 @@
-Analise a interface selecionada com base nas 10 heurísticas de usabilidade de Nielsen. Para cada heurística aplicável, gere uma resposta seguindo este formato numerado:
+Analise a interface com base nas 10 heurísticas de Nielsen e gere uma análise para cada uma, numerando os campos conforme o modelo abaixo. Se não houver problema, indique isso nos campos apropriados.
 
-1 - Título (Nome da heurística)
-2 - Problema
-3 - Descrição do problema
-4 - Sugestão de melhoria
-5 - Descrição da melhoria
-6 - Severidade (Baixa, Média ou Alta)
+Para cada heurística, utilize a seguinte estrutura:
+
+1 - [Título da Heurística]  
+2 - [Problema identificado]  
+3 - [Descrição do problema]  
+4 - [Sugestão de melhoria]  
+5 - [Descrição da melhoria]  
+6 - [Severidade: leve, moderada ou crítica]

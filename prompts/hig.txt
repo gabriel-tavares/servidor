@@ -1,8 +1,8 @@
-Analise a interface com base no Human Interface Guidelines da Apple. Para cada diretriz violada ou mal aplicada, siga esta estrutura:
+Analise a interface com base no Human Interface Guidelines da Apple. Para cada diretriz identificada, use a estrutura numerada a seguir:
 
-1 - Título (Diretriz do HIG)
-2 - Problema
-3 - Descrição do problema
-4 - Sugestão de melhoria
-5 - Descrição da melhoria
-6 - Severidade
+1 - [Diretriz HIG analisada]  
+2 - [Problema identificado]  
+3 - [Descrição do problema]  
+4 - [Sugestão de melhoria]  
+5 - [Descrição da melhoria]  
+6 - [Severidade: leve, moderada ou crítica]

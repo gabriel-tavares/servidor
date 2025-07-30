@@ -1,8 +1,8 @@
-Analise a interface com base na classificação de Weinschenk e Barker, considerando os 4 tipos de usuários (Sensores, Pensadores, Intuitivos, Sentimentais). Para cada tipo afetado, detalhe:
+Utilize a Classificação de Weinschenk para analisar a interface com base em princípios psicológicos. Para cada princípio, avalie a presença ou ausência e numere os campos conforme o modelo abaixo:
 
-1 - Título (Tipo de usuário)
-2 - Problema
-3 - Descrição do problema
-4 - Sugestão de melhoria
-5 - Descrição da melhoria
-6 - Severidade
+1 - [Princípio de Weinschenk]  
+2 - [Problema identificado]  
+3 - [Descrição do problema]  
+4 - [Sugestão de melhoria]  
+5 - [Descrição da melhoria]  
+6 - [Severidade: leve, moderada ou crítica]

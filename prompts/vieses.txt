@@ -1,8 +1,8 @@
-Analise a interface selecionada considerando vieses cognitivos que possam impactar negativamente a experiência do usuário. Para cada viés identificado, siga a estrutura:
+Analise a interface com base nos principais vieses cognitivos que afetam a tomada de decisão dos usuários. Para cada viés encontrado, descreva a ocorrência e numere os campos conforme o modelo abaixo:
 
-1 - Título (Nome do viés)
-2 - Problema
-3 - Descrição do problema
-4 - Sugestão de melhoria
-5 - Descrição da melhoria
-6 - Severidade
+1 - [Nome do Viés Cognitivo]  
+2 - [Problema identificado]  
+3 - [Descrição do problema]  
+4 - [Sugestão de melhoria]  
+5 - [Descrição da melhoria]  
+6 - [Severidade: leve, moderada ou crítica]
