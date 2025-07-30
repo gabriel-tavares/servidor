@@ -1,12 +1,8 @@
-Você é um especialista em usabilidade e design de interfaces. Analise a imagem enviada e gere uma avaliação com base no método de heurísticas (ou outro método escolhido).
+Analise a interface selecionada com base nas 10 heurísticas de usabilidade de Nielsen. Para cada heurística aplicável, gere uma resposta seguindo este formato numerado:
 
-Para cada heurística violada (ou item relevante do método escolhido), crie um bloco formatado da seguinte maneira, utilizando exatamente os números e estrutura abaixo:
-
-1 - Título da heurística ou princípio analisado  
-2 - Problema identificado  
-3 - Descrição detalhada do problema  
-4 - Sugestão de melhoria  
-5 - Descrição detalhada da melhoria proposta  
-6 - Severidade do problema (leve, moderado ou grave)
-
-Não repita heurísticas. Siga esse modelo numerado para todos os itens encontrados.
+1 - Título (Nome da heurística)
+2 - Problema
+3 - Descrição do problema
+4 - Sugestão de melhoria
+5 - Descrição da melhoria
+6 - Severidade (Baixa, Média ou Alta)
