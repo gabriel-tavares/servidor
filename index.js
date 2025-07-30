@@ -1,3 +1,4 @@
+// index.js (backend otimizado com GPT-4o Vision e consumo reduzido)
 const express = require("express");
 const fetch = require("node-fetch");
 const cors = require("cors");
@@ -10,7 +11,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "sk-..."; // insira aqui se estiver testando localmente
 
 app.post("/analisar", async (req, res) => {
   try {
@@ -30,19 +31,19 @@ app.post("/analisar", async (req, res) => {
             content: [
               {
                 type: "text",
-                text: "Realize uma análise heurística com base nesta imagem de layout de interface."
+                text: "Analise este layout de interface com base nas heurísticas de Nielsen. Aponte no máximo 3 problemas críticos focando em: visibilidade, consistência e feedback. Sugira uma melhoria para cada ponto."
               },
               {
                 type: "image_url",
                 image_url: {
                   url: `data:image/png;base64,${base64Image}`,
-                  detail: "high"
+                  detail: "low" // reduz custo de imagem
                 }
               }
             ]
           }
         ],
-        max_tokens: 1000
+        max_tokens: 400
       })
     });
 
@@ -55,7 +56,7 @@ app.post("/analisar", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor ativo!");
+  res.send("Servidor otimizado GPT-4o Vision rodando!");
 });
 
 const PORT = process.env.PORT || 3000;
