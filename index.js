@@ -4,7 +4,11 @@ const cors = require("cors");
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -26,7 +30,7 @@ app.post("/analisar", async (req, res) => {
             content: [
               {
                 type: "text",
-                text: "Realize uma análise heurística com base nesta imagem de layout de interface. Aponte problemas de usabilidade, sugestões de melhoria e possíveis falhas visuais."
+                text: "Realize uma análise heurística com base nesta imagem de layout de interface."
               },
               {
                 type: "image_url",
@@ -51,7 +55,7 @@ app.post("/analisar", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor de IA ativo com GPT‑4o Vision.");
+  res.send("Servidor ativo!");
 });
 
 const PORT = process.env.PORT || 3000;
