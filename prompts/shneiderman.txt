@@ -1,12 +1,25 @@
-Analise a interface selecionada com base nas 8 regras de ouro de Shneiderman. Para cada regra violada ou não atendida, use a seguinte estrutura:
+Analise a interface com base nas 8 regras de ouro de Shneiderman e gere uma análise para cada uma das heurísticas numerando os campos conforme o modelo abaixo. Se não houver problema, indique isso nos campos apropriados.
 
-Para cada regra violada, responda APENAS no seguinte formato numerado, sem títulos adicionais, sem markdown, sem bullets:
+Para cada heurística, utilize a seguinte estrutura de resposta:
 
-1 - Nome da Regra
-2 - Problema
-3 - Descrição objetiva do problema encontrado na interface
-4 - Sugestão de melhoria
-5 - Descrição detalhada da sugestão de melhoria
-6 - Severidade (Alta, Média ou Baixa)
+1 - [Título da Heurística]  
+2 - [Problema identificado]  
+3 - [Descrição do problema]  
+4 - [Sugestão de melhoria]  
+5 - [Descrição da melhoria]  
+6 - [Severidade: leve, moderada ou crítica]
 
-⚠️ A resposta deve conter apenas blocos como este, numerados de 1 a 6 para cada item identificado. Não adicione introdução ou explicação. Não use negrito ou qualquer formatação markdown.
+Importante:
+- Use uma nova numeração para cada heurística (sempre começando do 1 ao 6).
+- Separe claramente cada heurística.
+- Use frases completas, mantendo o tom objetivo e profissional.
+- Se não houver problema na heurística, preencha os campos com "Não identificado", "Não aplicável" ou "Nenhuma sugestão".
+
+Exemplo:
+
+1 - Consistência  
+2 - Não identificado  
+3 - A interface mantém padrões visuais e de interação de forma consistente.  
+4 - Nenhuma sugestão  
+5 - Não aplicável  
+6 - Não aplicável
