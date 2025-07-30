@@ -1,0 +1,8 @@
+Analise a interface selecionada com base nas 10 heurísticas de usabilidade de Nielsen. Para cada heurística aplicável, gere uma resposta seguindo este formato numerado:
+
+1 - Título (Nome da heurística)
+2 - Problema
+3 - Descrição do problema
+4 - Sugestão de melhoria
+5 - Descrição da melhoria
+6 - Severidade (Baixa, Média ou Alta)

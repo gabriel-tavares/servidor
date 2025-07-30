@@ -1,0 +1,8 @@
+Analise a interface com base na classificação de Weinschenk e Barker, considerando os 4 tipos de usuários (Sensores, Pensadores, Intuitivos, Sentimentais). Para cada tipo afetado, detalhe:
+
+1 - Título (Tipo de usuário)
+2 - Problema
+3 - Descrição do problema
+4 - Sugestão de melhoria
+5 - Descrição da melhoria
+6 - Severidade
