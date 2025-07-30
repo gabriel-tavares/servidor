@@ -1,8 +1,12 @@
 Analise a interface selecionada com base nas 8 regras de ouro de Shneiderman. Para cada regra violada ou não atendida, use a seguinte estrutura:
 
-1 - Título (Nome da regra)
+Para cada regra violada, responda APENAS no seguinte formato numerado, sem títulos adicionais, sem markdown, sem bullets:
+
+1 - Nome da Regra
 2 - Problema
-3 - Descrição do problema
+3 - Descrição objetiva do problema encontrado na interface
 4 - Sugestão de melhoria
-5 - Descrição da melhoria
-6 - Severidade
+5 - Descrição detalhada da sugestão de melhoria
+6 - Severidade (Alta, Média ou Baixa)
+
+⚠️ A resposta deve conter apenas blocos como este, numerados de 1 a 6 para cada item identificado. Não adicione introdução ou explicação. Não use negrito ou qualquer formatação markdown.
