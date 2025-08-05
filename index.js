@@ -100,8 +100,19 @@ Apenas no caso de não encontrar informações suficientes ou relevantes nessa b
     const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }
     });
+
     const messagesData = await messagesResponse.json();
+
+    if (!messagesData.data || !Array.isArray(messagesData.data)) {
+      console.error("❌ Erro na resposta da OpenAI:", messagesData);
+      return res.status(500).json({ error: "Erro ao recuperar resposta do assistant.", detalhe: messagesData });
+    }
+    
     const ultimaMensagem = messagesData.data.find(m => m.role === "assistant");
+    
+    if (!ultimaMensagem) {
+      return res.status(500).json({ error: "Nenhuma resposta do assistant encontrada." });
+    }
 
     res.json({ resposta: ultimaMensagem.content[0].text.value });
   } catch (error) {
