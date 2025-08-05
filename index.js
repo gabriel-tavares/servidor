@@ -108,7 +108,13 @@ Apenas no caso de não encontrar informações suficientes ou relevantes nessa b
       return res.status(500).json({ error: "Nenhuma resposta do assistant encontrada." });
     }
 
-    res.json({ resposta: ultimaMensagem.content[0].text.value });
+    const textoFinal = ultimaMensagem?.content?.[0]?.text?.value;
+
+    if (!textoFinal) {
+      return res.status(500).json({ error: "A resposta do assistant veio vazia ou malformada." });
+    }
+    
+    res.json({ resposta: textoFinal });
   } catch (error) {
     console.error("Erro no backend:", error);
     res.status(500).json({ error: error.message });
