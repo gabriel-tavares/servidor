@@ -1,5 +1,3 @@
-// index.js (backend com Assistant da OpenAI, pronto para Render)
-
 const express = require("express");
 const fetch = require("node-fetch");
 const cors = require("cors");
@@ -14,12 +12,11 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-// 🔐 Variáveis de ambiente definidas no Render
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ASSISTANT_ID = process.env.ASSISTANT_ID;
 
 if (!OPENAI_API_KEY || !ASSISTANT_ID) {
-  console.error("❌ Variáveis OPENAI_API_KEY ou ASSISTANT_ID não estão definidas.");
+  console.error("❌ OPENAI_API_KEY ou ASSISTANT_ID não definidos.");
   process.exit(1);
 }
 
@@ -37,12 +34,15 @@ app.post("/analisar", async (req, res) => {
   try {
     const { image, metodo } = req.body;
 
+    const headers = {
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+      "OpenAI-Beta": "assistants=v2"
+    };
+
     const threadResponse = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      }
+      headers
     });
     const thread = await threadResponse.json();
 
@@ -55,17 +55,11 @@ Apenas no caso de não encontrar informações suficientes ou relevantes nessa b
 
     await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
+      headers,
       body: JSON.stringify({
         role: "user",
         content: [
-          {
-            type: "text",
-            text: mensagem
-          },
+          { type: "text", text: mensagem },
           {
             type: "image_url",
             image_url: {
@@ -79,10 +73,7 @@ Apenas no caso de não encontrar informações suficientes ou relevantes nessa b
 
     const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
+      headers,
       body: JSON.stringify({ assistant_id: ASSISTANT_ID })
     });
     const run = await runResponse.json();
@@ -91,38 +82,41 @@ Apenas no caso de não encontrar informações suficientes ou relevantes nessa b
     while (runStatus === "queued" || runStatus === "in_progress") {
       await new Promise(resolve => setTimeout(resolve, 1500));
       const statusResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
-        headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }
+        headers
       });
       const statusData = await statusResponse.json();
       runStatus = statusData.status;
     }
 
     const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }
+      headers
     });
 
     const messagesData = await messagesResponse.json();
 
     if (!messagesData.data || !Array.isArray(messagesData.data)) {
       console.error("❌ Erro na resposta da OpenAI:", messagesData);
-      return res.status(500).json({ error: "Erro ao recuperar resposta do assistant.", detalhe: messagesData });
+      return res.status(500).json({
+        error: "Erro ao recuperar resposta do assistant.",
+        detalhe: messagesData
+      });
     }
-    
+
     const ultimaMensagem = messagesData.data.find(m => m.role === "assistant");
-    
+
     if (!ultimaMensagem) {
       return res.status(500).json({ error: "Nenhuma resposta do assistant encontrada." });
     }
 
     res.json({ resposta: ultimaMensagem.content[0].text.value });
   } catch (error) {
-    console.error("❌ Erro no backend:", error);
+    console.error("Erro no backend:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("✅ Backend com Assistant OpenAI ativo!");
+  res.send("✅ Backend com Assistant OpenAI rodando com v2!");
 });
 
 const PORT = process.env.PORT || 3000;
