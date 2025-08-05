@@ -1,4 +1,5 @@
-// index.js (backend otimizado com GPT-4o Vision e seleção de método heurístico)
+// index.js (backend com Assistant da OpenAI, pronto para Render)
+
 const express = require("express");
 const fetch = require("node-fetch");
 const cors = require("cors");
@@ -13,7 +14,14 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "sk-..."; // insira aqui se estiver testando localmente
+// 🔐 Variáveis de ambiente definidas no Render
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const ASSISTANT_ID = process.env.ASSISTANT_ID;
+
+if (!OPENAI_API_KEY || !ASSISTANT_ID) {
+  console.error("❌ Variáveis OPENAI_API_KEY ou ASSISTANT_ID não estão definidas.");
+  process.exit(1);
+}
 
 function carregarPrompt(metodo) {
   const arquivo = path.join(__dirname, "prompts", `${metodo}.txt`);
@@ -28,49 +36,83 @@ function carregarPrompt(metodo) {
 app.post("/analisar", async (req, res) => {
   try {
     const { image, metodo } = req.body;
-    const prompt = carregarPrompt(metodo);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const threadResponse = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
+    const thread = await threadResponse.json();
+
+    const prompt = carregarPrompt(metodo);
+    const instrucoesExtra = `
+Você deve utilizar prioritariamente a base de conhecimento anexada ao assistente para realizar todo o raciocínio, análise e pesquisa necessárias à tarefa. 
+Apenas no caso de não encontrar informações suficientes ou relevantes nessa base, estará autorizado a realizar pesquisas complementares na internet.
+    `;
+    const mensagem = `${prompt}\n\n${instrucoesExtra}`;
+
+    await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
+        role: "user",
+        content: [
           {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: prompt
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:image/png;base64,${image}`,
-                  detail: "low"
-                }
-              }
-            ]
+            type: "text",
+            text: mensagem
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/png;base64,${image}`,
+              detail: "low"
+            }
           }
-        ],
-        max_tokens: 400
+        ]
       })
     });
 
-    const data = await response.json();
-    res.json(data);
+    const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ assistant_id: ASSISTANT_ID })
+    });
+    const run = await runResponse.json();
+
+    let runStatus = run.status;
+    while (runStatus === "queued" || runStatus === "in_progress") {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const statusResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
+        headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }
+      });
+      const statusData = await statusResponse.json();
+      runStatus = statusData.status;
+    }
+
+    const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }
+    });
+    const messagesData = await messagesResponse.json();
+    const ultimaMensagem = messagesData.data.find(m => m.role === "assistant");
+
+    res.json({ resposta: ultimaMensagem.content[0].text.value });
   } catch (error) {
-    console.error("Erro no backend:", error);
+    console.error("❌ Erro no backend:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor otimizado GPT-4o Vision rodando!");
+  res.send("✅ Backend com Assistant OpenAI ativo!");
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
