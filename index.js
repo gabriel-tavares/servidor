@@ -20,16 +20,6 @@ if (!OPENAI_API_KEY || !ASSISTANT_ID) {
   process.exit(1);
 }
 
-function carregarPrompt(metodo) {
-  const arquivo = path.join(__dirname, "prompts", `${metodo}.txt`);
-  try {
-    return fs.readFileSync(arquivo, "utf-8");
-  } catch (err) {
-    console.warn(`⚠️ Prompt '${metodo}' não encontrado. Usando 'nielsen.txt' como fallback.`);
-    return fs.readFileSync(path.join(__dirname, "prompts", "nielsen.txt"), "utf-8");
-  }
-}
-
 app.post("/analisar", async (req, res) => {
   try {
     const { image, metodo } = req.body;
@@ -49,12 +39,11 @@ app.post("/analisar", async (req, res) => {
     });
     const thread = await threadResponse.json();
 
-    const prompt = carregarPrompt(metodo);
     const instrucoesExtra = `
 Você deve utilizar prioritariamente a base de conhecimento anexada ao assistente para realizar todo o raciocínio, análise e pesquisa necessárias à tarefa. 
 Apenas no caso de não encontrar informações suficientes ou relevantes nessa base, estará autorizado a realizar pesquisas complementares na internet.
     `;
-    const mensagem = `${prompt}\n\n${instrucoesExtra}`;
+    const mensagem = "";
 
     await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       method: "POST",
