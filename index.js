@@ -52,12 +52,15 @@ app.post("/analisar", async (req, res) => {
       body: JSON.stringify({
         role: "user",
         content: [
-          { type: "text", text: mensagem },
+          {
+            type: "text",
+            text: mensagem
+          },
           {
             type: "image_url",
             image_url: {
               url: image,
-              detail: "low"
+              detail: "high"
             }
           }
         ]
