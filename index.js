@@ -137,11 +137,14 @@ Responda no seguinte formato:
 
     const messagesData = await messagesResponse.json();
     
-    const ultimaMensagem = messagesData.data?.find(m => m.role === "assistant");
-    const analises = ultimaMensagem?.content?.[0]?.text?.value;
-    const analisesJSON = JSON.parse(analises); // <- transforma string JSON em objeto
-    //respostaFinal = respostaFinal.replace(/【\d+:\d+†source[^】]*】/g, "");
-    const citations = ultimaMensagem?.content?.[0]?.text?.annotations || [];
+    try {
+  const raw = ultimaMensagem?.content?.[0]?.text?.value || "[]";
+  const analisesJSON = JSON.parse(raw);
+  res.json({ resposta: analisesJSON });
+} catch (e) {
+  console.error("Erro ao fazer parse do JSON:", e);
+  res.status(500).json({ error: "Resposta da IA não está em formato JSON válido." });
+}
 
     // Para cada citação, buscar nome do arquivo
     const referencias = [];
