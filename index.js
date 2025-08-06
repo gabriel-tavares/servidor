@@ -163,7 +163,7 @@ app.post("/analisar", async (req, res) => {
       resposta: respostaFinal,
       referencias: referencias 
     });
-  } catch (error) {
+   catch (error) {
     console.error("❌ Erro geral:", error);
     res.status(500).json({ error: error.message });
   }
