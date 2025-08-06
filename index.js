@@ -34,6 +34,9 @@ app.post("/analisar", async (req, res) => {
   try {
     const { image, metodo } = req.body;
 
+    console.log("🖼️ Tamanho da imagem recebida:", image.length);
+    console.log("🖼️ Início da imagem:", image.slice(0, 50));
+
     const headers = {
       "Authorization": `Bearer ${OPENAI_API_KEY}`,
       "Content-Type": "application/json",
@@ -128,5 +131,3 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
 
-console.log("🖼️ Tamanho da imagem recebida:", image.length);
-console.log("🖼️ Início da imagem:", image.slice(0, 50));
