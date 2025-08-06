@@ -90,7 +90,7 @@ app.post("/analisar", async (req, res) => {
       content: [
         {
           type: "text",
-          text: `Analise a seguinte interface com base nas heurísticas de usabilidade:
+          text: `Analise a seguinte interface com base no modelo "${metodo}":
 
 ${descricaoVisual}
 
