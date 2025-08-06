@@ -22,16 +22,15 @@ const HEADERS = {
 
 app.post("/analisar", async (req, res) => {
   try {
-    const { image } = req.body;
+    const { html } = req.body;
 
-    if (!image || !image.startsWith("data:image/png;base64,")) {
-      return res.status(400).json({ error: "Imagem inválida ou mal formatada." });
+    if (!html || typeof html !== "string" || html.length < 10) {
+      return res.status(400).json({ error: "HTML inválido ou muito curto." });
     }
 
-    console.log("📤 Tamanho da imagem recebida:", image.length);
-    console.log("📤 Início da imagem:", image.slice(0, 50));
+    console.log("📤 HTML recebido:", html.slice(0, 100), "...");
 
-    // 1. Criação do thread
+    // 1. Criar thread
     const threadResponse = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
       headers: HEADERS
@@ -45,35 +44,32 @@ app.post("/analisar", async (req, res) => {
       return res.status(500).json({ error: "Erro ao criar thread", detalhe: threadText });
     }
 
-    // 2. Enviar mensagem com imagem + texto
-    const mensagem = "Por favor, analise a imagem abaixo com base nas heurísticas de usabilidade.";
+    // 2. Enviar HTML como mensagem
+    const mensagem = `
+A seguir está a estrutura HTML de uma interface digital. 
+Analise seu conteúdo com base nas heurísticas de usabilidade (como Nielsen, Shneiderman, etc).
+Indique acertos e problemas usando a estrutura: 
+1 - Título, 2 - Descrição, 3 - Sugestão, 4 - Justificativa, 5 - Severidade.
 
-    const messagePayload = {
-      role: "user",
-      content: [
-        {
-          type: "text",
-          text: mensagem
-        },
-        {
-          type: "image_url",
-          image_url: {
-            url: image,
-            detail: "auto"
-          }
-        }
-      ]
-    };
-
-    console.log("📤 Enviando mensagem:", JSON.stringify(messagePayload, null, 2));
+HTML:
+${html}
+`;
 
     const messageResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       method: "POST",
       headers: HEADERS,
-      body: JSON.stringify(messagePayload)
+      body: JSON.stringify({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: mensagem
+          }
+        ]
+      })
     });
 
-    // 3. Iniciar execução do Assistant
+    // 3. Iniciar execução do assistant
     const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
       method: "POST",
       headers: HEADERS,
@@ -121,7 +117,7 @@ app.post("/analisar", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("✅ Backend com Assistants API v2 rodando!");
+  res.send("✅ Backend com Assistants API v2 (HTML input) rodando!");
 });
 
 const PORT = process.env.PORT || 3000;
