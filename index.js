@@ -3,7 +3,7 @@ const fetch = require("node-fetch");
 const cors = require("cors");
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -24,59 +24,64 @@ app.post("/analisar", async (req, res) => {
   try {
     const { image } = req.body;
 
-    // ✅ Log para garantir imagem válida
-    console.log("🖼️ Imagem recebida:", image?.slice(0, 50), "...");
+    if (!image || !image.startsWith("data:image/png;base64,")) {
+      return res.status(400).json({ error: "Imagem inválida ou mal formatada." });
+    }
 
-    // Criação do thread
+    console.log("📤 Tamanho da imagem recebida:", image.length);
+    console.log("📤 Início da imagem:", image.slice(0, 50));
+
+    // 1. Criação do thread
     const threadResponse = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
       headers: HEADERS
     });
-
     const threadText = await threadResponse.text();
     let thread;
     try {
       thread = JSON.parse(threadText);
     } catch (err) {
       console.error("❌ Erro ao criar thread:", threadText);
-      return res.status(500).json({ error: "Falha ao criar thread", detalhe: threadText });
+      return res.status(500).json({ error: "Erro ao criar thread", detalhe: threadText });
     }
 
-    // Mensagem simples para IA processar imagem
-    const mensagem = "Analise a interface visual na imagem abaixo com base em heurísticas de usabilidade.";
+    // 2. Enviar mensagem com imagem + texto
+    const mensagem = "Por favor, analise a imagem abaixo com base nas heurísticas de usabilidade.";
 
-    // Envio da mensagem + imagem
+    const messagePayload = {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: mensagem
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: image,
+            detail: "auto"
+          }
+        }
+      ]
+    };
+
+    console.log("📤 Enviando mensagem:", JSON.stringify(messagePayload, null, 2));
+
     const messageResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       method: "POST",
       headers: HEADERS,
-      body: JSON.stringify({
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: mensagem
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: image,
-              detail: "auto"
-            }
-          }
-        ]
-      })
+      body: JSON.stringify(messagePayload)
     });
 
-    // Execução do assistant
+    // 3. Iniciar execução do Assistant
     const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
       method: "POST",
       headers: HEADERS,
       body: JSON.stringify({ assistant_id: ASSISTANT_ID })
     });
-
     const run = await runResponse.json();
 
-    // Aguardar execução
+    // 4. Aguardar execução
     let runStatus = run.status;
     while (runStatus === "queued" || runStatus === "in_progress") {
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -87,7 +92,7 @@ app.post("/analisar", async (req, res) => {
       runStatus = statusData.status;
     }
 
-    // Buscar mensagens finais
+    // 5. Obter mensagens finais
     const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       headers: HEADERS
     });
@@ -97,28 +102,18 @@ app.post("/analisar", async (req, res) => {
     try {
       messagesData = JSON.parse(messagesText);
     } catch (err) {
-      console.error("❌ Resposta de mensagens não é JSON:", messagesText);
+      console.error("❌ Resposta não JSON:", messagesText);
       return res.status(500).json({ error: "Resposta inválida da OpenAI", detalhe: messagesText });
     }
 
-    if (!messagesData.data || !Array.isArray(messagesData.data)) {
-      console.error("❌ Erro de estrutura:", messagesData);
-      return res.status(500).json({ error: "Estrutura inesperada da resposta", detalhe: messagesData });
+    const ultimaMensagem = messagesData.data?.find(m => m.role === "assistant");
+    const respostaFinal = ultimaMensagem?.content?.[0]?.text?.value;
+
+    if (!respostaFinal) {
+      return res.status(500).json({ error: "Nenhuma resposta válida encontrada." });
     }
 
-    const ultimaMensagem = messagesData.data.find(m => m.role === "assistant");
-
-    if (!ultimaMensagem) {
-      return res.status(500).json({ error: "Nenhuma resposta do assistant encontrada." });
-    }
-
-    const textoFinal = ultimaMensagem?.content?.[0]?.text?.value;
-
-    if (!textoFinal) {
-      return res.status(500).json({ error: "Resposta do assistant veio vazia ou malformada." });
-    }
-
-    res.json({ resposta: textoFinal });
+    res.json({ resposta: respostaFinal });
   } catch (error) {
     console.error("❌ Erro no backend:", error);
     res.status(500).json({ error: error.message });
