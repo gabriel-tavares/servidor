@@ -92,14 +92,14 @@ app.post("/analisar", async (req, res) => {
           type: "text",
           text: `Analise a seguinte interface com base nas heurísticas de usabilidade:
 
-          ${descricaoVisual}
-          
-          Responda no seguinte formato:
-          1 - Título
-          2 - Descrição
-          3 - Sugestão
-          4 - Justificativa
-          5 - Severidade: leve, moderada, crítica ou positiva.`
+${descricaoVisual}
+
+Responda no seguinte formato:
+1 - Título
+2 - Descrição
+3 - Sugestão
+4 - Justificativa
+5 - Severidade: leve, moderada, crítica ou positiva.`
         }
       ]
     };
@@ -138,32 +138,13 @@ app.post("/analisar", async (req, res) => {
     const messagesData = await messagesResponse.json();
     const ultimaMensagem = messagesData.data?.find(m => m.role === "assistant");
     const respostaFinal = ultimaMensagem?.content?.[0]?.text?.value;
-    const citations = ultimaMensagem?.content?.[0]?.text?.annotations || [];
-
-    // Para cada citação, buscar nome do arquivo
-    const referencias = [];
-
-    for (const citation of citations) {
-      const fileId = citation.file_citation?.file_id;
-      if (fileId) {
-        const fileResponse = await fetch(`https://api.openai.com/v1/files/${fileId}`, {
-          headers: HEADERS_ASSISTANT
-        });
-        const fileData = await fileResponse.json();
-        if (fileData?.filename) {
-          referencias.push(`📚 Fonte: ${fileData.filename}`);
-        }
-      }
 
     if (!respostaFinal) {
       return res.status(500).json({ error: "Nenhuma resposta encontrada." });
     }
 
-    res.json({ 
-      resposta: respostaFinal,
-      referencias: referencias 
-    });
-   catch (error) {
+    res.json({ resposta: respostaFinal });
+  } catch (error) {
     console.error("❌ Erro geral:", error);
     res.status(500).json({ error: error.message });
   }
