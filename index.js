@@ -60,7 +60,7 @@ app.post("/analisar", async (req, res) => {
             type: "image_url",
             image_url: {
               url: image,
-              detail: "high"
+              detail: "auto"
             }
           }
         ]
