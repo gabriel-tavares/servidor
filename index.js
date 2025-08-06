@@ -28,7 +28,7 @@ const modeloVision = "gpt-4o"; // ou gpt-4-vision-preview
 
 app.post("/analisar", async (req, res) => {
   try {
-    const { image } = req.body;
+    const { image, metodo  } = req.body;
 
     if (!image || !image.startsWith("data:image/png;base64,")) {
       return res.status(400).json({ error: "Imagem inválida ou mal formatada." });
