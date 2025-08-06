@@ -7,18 +7,18 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const ASSISTANT_ID = process.env.ASSISTANT_ID;
 
-if (!OPENAI_API_KEY) {
-  console.error("❌ Variável OPENAI_API_KEY não definida.");
+if (!OPENAI_API_KEY || !ASSISTANT_ID) {
+  console.error("❌ Variáveis OPENAI_API_KEY ou ASSISTANT_ID não definidas.");
   process.exit(1);
 }
 
 const HEADERS = {
   "Authorization": `Bearer ${OPENAI_API_KEY}`,
-  "Content-Type": "application/json"
+  "Content-Type": "application/json",
+  "OpenAI-Beta": "assistants=v2"
 };
-
-const modelo = "gpt-4o"; // ou gpt-4 / gpt-3.5-turbo
 
 app.post("/analisar", async (req, res) => {
   try {
@@ -28,47 +28,70 @@ app.post("/analisar", async (req, res) => {
       return res.status(400).json({ error: "Imagem inválida ou mal formatada." });
     }
 
-    const mensagens = [
-      {
-        role: "system",
-        content: "Você é um especialista em UX. Analise imagens de interfaces digitais com base nas heurísticas de Nielsen, Shneiderman e Gerhardt-Powals. Use o formato: 1 - Título, 2 - Descrição, 3 - Sugestão, 4 - Justificativa, 5 - Severidade."
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: "Analise a interface visual da imagem abaixo."
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: image,
-              detail: "auto"
-            }
-          }
-        ]
-      }
-    ];
+    console.log("📤 Tamanho da imagem:", image.length);
+    console.log("📤 Prefixo da imagem:", image.slice(0, 50));
 
-    const completionResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    // 1. Criar thread
+    const threadResponse = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
-      headers: HEADERS,
-      body: JSON.stringify({
-        model: modelo,
-        messages: mensagens,
-        max_tokens: 1000,
-        temperature: 0.7
-      })
+      headers: HEADERS
     });
 
-    const completionData = await completionResponse.json();
+    const thread = await threadResponse.json();
 
-    if (!completionData.choices || !completionData.choices[0]) {
-      return res.status(500).json({ error: "Resposta inesperada da OpenAI", detalhe: completionData });
+    // 2. Enviar mensagem só com a imagem (sem texto)
+    const mensagemImagem = {
+      role: "user",
+      content: [
+        {
+          type: "image_url",
+          image_url: {
+            url: image,
+            detail: "auto"
+          }
+        }
+      ]
+    };
+
+    await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      method: "POST",
+      headers: HEADERS,
+      body: JSON.stringify(mensagemImagem)
+    });
+
+    // 3. Iniciar execução do assistant
+    const runResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
+      method: "POST",
+      headers: HEADERS,
+      body: JSON.stringify({ assistant_id: ASSISTANT_ID })
+    });
+
+    const run = await runResponse.json();
+
+    // 4. Aguardar execução
+    let runStatus = run.status;
+    while (runStatus === "queued" || runStatus === "in_progress") {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const statusCheck = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
+        headers: HEADERS
+      });
+      const statusData = await statusCheck.json();
+      runStatus = statusData.status;
     }
 
-    const respostaFinal = completionData.choices[0].message.content;
+    // 5. Obter resposta da IA
+    const messagesResponse = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      headers: HEADERS
+    });
+
+    const messagesData = await messagesResponse.json();
+
+    const ultimaMensagem = messagesData.data?.find(m => m.role === "assistant");
+    const respostaFinal = ultimaMensagem?.content?.[0]?.text?.value;
+
+    if (!respostaFinal) {
+      return res.status(500).json({ error: "Nenhuma resposta encontrada da IA." });
+    }
 
     res.json({ resposta: respostaFinal });
   } catch (error) {
@@ -78,7 +101,7 @@ app.post("/analisar", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("✅ Backend usando /chat/completions com imagem inline!");
+  res.send("✅ Backend Assistant v2 com image_url funcionando!");
 });
 
 const PORT = process.env.PORT || 3000;
