@@ -138,8 +138,9 @@ Responda no seguinte formato:
     const messagesData = await messagesResponse.json();
     
     const ultimaMensagem = messagesData.data?.find(m => m.role === "assistant");
-    let respostaFinal = ultimaMensagem?.content?.[0]?.text?.value;
-    respostaFinal = respostaFinal.replace(/【\d+:\d+†source[^】]*】/g, "");
+    const analises = ultimaMensagem?.content?.[0]?.text?.value;
+    const analisesJSON = JSON.parse(analises); // <- transforma string JSON em objeto
+    //respostaFinal = respostaFinal.replace(/【\d+:\d+†source[^】]*】/g, "");
     const citations = ultimaMensagem?.content?.[0]?.text?.annotations || [];
 
     // Para cada citação, buscar nome do arquivo
