@@ -136,42 +136,48 @@ Responda no seguinte formato:
     });
 
     const messagesData = await messagesResponse.json();
-    
-    try {
-  const raw = ultimaMensagem?.content?.[0]?.text?.value || "[]";
-  const analisesJSON = JSON.parse(raw);
-  res.json({ resposta: analisesJSON });
-} catch (e) {
-  console.error("Erro ao fazer parse do JSON:", e);
-  res.status(500).json({ error: "Resposta da IA não está em formato JSON válido." });
+
+// Encontra a última mensagem do assistant com conteúdo
+const ultimaMensagem = messagesData.data.reverse().find(
+  (msg) => msg.role === "assistant" && msg.content?.[0]?.type === "text"
+);
+
+if (!ultimaMensagem) {
+  return res.status(500).json({ error: "Nenhuma resposta do assistant encontrada." });
 }
 
-    // Para cada citação, buscar nome do arquivo
-    const referencias = [];
-
-    for (const citation of citations) {
-      const fileId = citation.file_citation?.file_id;
-      if (fileId) {
-        const fileResponse = await fetch(`https://api.openai.com/v1/files/${fileId}`, {
-          headers: HEADERS_ASSISTANT
-        });
-        const fileData = await fileResponse.json();
-        if (fileData?.filename) {
-          referencias.push(`📚 Fonte: ${fileData.filename}`);
-        }
-      }
-    }
-
-    if (!respostaFinal) {
-      return res.status(500).json({ error: "Nenhuma resposta encontrada." });
-    }
-
-    res.json({ resposta: respostaFinal, referencias: referencias});
-  } catch (error) {
-    console.error("❌ Erro geral:", error);
-    res.status(500).json({ error: error.message });
+let respostaFinal;
+try {
+  const raw = ultimaMensagem.content?.[0]?.text?.value || "[]";
+  respostaFinal = JSON.parse(raw);
+} catch (e) {
+  console.error("Erro ao fazer parse do JSON:", e);
+  if (!res.headersSent) {
+    return res.status(500).json({ error: "Resposta da IA não está em formato JSON válido." });
   }
-});
+}
+
+// Se houver citações (file_citations), busque nomes dos arquivos
+const citations = ultimaMensagem.content?.[0]?.text?.annotations?.filter(a => a.type === "file_citation") || [];
+const referencias: string[] = [];
+
+for (const citation of citations) {
+  const fileId = citation.file_citation?.file_id;
+  if (fileId) {
+    const fileResponse = await fetch(`https://api.openai.com/v1/files/${fileId}`, {
+      headers: HEADERS_ASSISTANT
+    });
+    const fileData = await fileResponse.json();
+    if (fileData?.filename) {
+      referencias.push(`📚 Fonte: ${fileData.filename}`);
+    }
+  }
+}
+
+if (!res.headersSent) {
+  res.json({ resposta: respostaFinal, referencias });
+}
+
 
 app.get("/", (req, res) => {
   res.send("✅ Backend com GPT-4 Vision + Assistant v2 rodando!");
